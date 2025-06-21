@@ -1,8 +1,3 @@
----
-title: Untitled
-
----
-
 <header style="display: flex; align-items: center; justify-content: center; height: 200px; background-color: transparent;">
   <div style="display: flex; align-items: center;">
     <div style="margin-right: 20px;">
