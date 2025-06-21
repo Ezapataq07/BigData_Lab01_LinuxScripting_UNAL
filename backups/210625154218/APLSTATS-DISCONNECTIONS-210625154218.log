@@ -1,0 +1,8 @@
+mission,device_type,desc_events
+CLNM,engine,2
+GALXONE,satellite,2
+ORBONE,engine,1
+ORBONE,space_prob,1
+TMRS,satellite,2
+TMRS,telescope,2
+UNKN,unknown,26
