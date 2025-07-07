@@ -1,4 +1,0 @@
-if [[ -f Apolo-11.sh ]]
-then
-    echo "Existe"
-fi

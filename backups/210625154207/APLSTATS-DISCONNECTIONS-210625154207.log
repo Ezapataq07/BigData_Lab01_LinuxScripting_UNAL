@@ -1,9 +1,0 @@
-mission,device_type,desc_events
-CLNM,telescope,3
-GALXONE,satellite,2
-ORBONE,rocket,2
-ORBONE,space_prob,2
-ORBONE,telescope,2
-TMRS,rocket,2
-TMRS,spaceship,2
-UNKN,unknown,41

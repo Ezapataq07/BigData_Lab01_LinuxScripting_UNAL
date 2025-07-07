@@ -9,29 +9,31 @@ source $CONFIG_FILE
 base_datetime=$(date $date_format)
 path_devices="${PWD}/$folder_devices/${base_datetime}"
 path_backups="${PWD}/${folder_backups}"
+path_reports="${PWD}/${folder_reports}/${base_datetime}"
 header="date${delimeter}mission${delimeter}device_type${delimeter}device_status${delimeter}hash"
 
 
 # Checks if should stop simulation
-if [[ -f "${PWD}/sim_step.log" ]]
+if [[ -f "${PWD}/tmp_sim_step.log" ]]
 then 
-    source "${PWD}/sim_step.log"
+    source "${PWD}/tmp_sim_step.log"
     ((sim_step+=1))
-    echo "sim_step=${sim_step}" > "${PWD}/sim_step.log"
-    if [[ $sim_step > $max_simulations ]] 
+    echo "sim_step=${sim_step}" > "${PWD}/tmp_sim_step.log"
+    if (($sim_step > $max_simulations))
     then
         echo -e "\n... Reach maximum simulation steps. Ending simulation ..." 
-        rm "${PWD}/sim_step.log" > /dev/null
+        rm "${PWD}/tmp_sim_step.log" > /dev/null
         exit 0
     fi 
 else 
-    echo "sim_step=1" > "${PWD}/sim_step.log"
+    echo "sim_step=1" > "${PWD}/tmp_sim_step.log"
     echo -e "... Starting simulation ...\n"
 fi
     
 
 mkdir -p $path_devices > /dev/null
 mkdir -p $path_backups > /dev/null
+mkdir -p $path_reports > /dev/null
 
 echo -e "\n... Requesting mission devices information ..."
 
@@ -67,11 +69,11 @@ echo "... Data received. Generating reports ..."
 
 cd $path_devices
 
-consolidated_report="APLSTATS-CONSOLIDATED-${base_datetime}.log"
-event_analysis_report="APLSTATS-EVENTANALYSIS-${base_datetime}.log"
-disconnections_report="APLSTATS-DISCONNECTIONS-${base_datetime}.log"
-failures_report="APLSTATS-FAILURES-${base_datetime}.log"
-percents_report="APLSTATS-PERCENTS-${base_datetime}.log"
+consolidated_report="${path_reports}/APLSTATS-CONSOLIDATED-${base_datetime}.log"
+event_analysis_report="${path_reports}/APLSTATS-EVENTANALYSIS-${base_datetime}.log"
+disconnections_report="${path_reports}/APLSTATS-DISCONNECTIONS-${base_datetime}.log"
+failures_report="${path_reports}/APLSTATS-FAILURES-${base_datetime}.log"
+percents_report="${path_reports}/APLSTATS-PERCENTS-${base_datetime}.log"
 
 csvstack $(ls) > $consolidated_report
 
@@ -94,14 +96,17 @@ WITH DisconnectionEvents AS (
 SELECT
     mission
     ,device_type
+    ,device_status
     ,COUNT(*) AS desc_events
 FROM 
     events
 WHERE
     device_status='unknown'
+    AND mission NOT IN ('UNKN')
 GROUP BY 
     mission
     ,device_type
+    ,device_status
 )
 SELECT
     d1.mission
@@ -117,6 +122,7 @@ WHERE
 csvsql --delimiter=$'\t' --query "
 SELECT
     mission
+    ,device_status
     ,COUNT(*) AS num_killed_devices
 FROM 
     events
@@ -124,6 +130,7 @@ WHERE
     device_status='killed'
 GROUP BY
     mission
+    ,device_status
 " ${consolidated_report} --tables events > $failures_report
 
 csvsql --delimiter=$'\t' --query "
@@ -133,6 +140,8 @@ SELECT
     ,ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM events),2)  AS percent_of_total_events
 FROM 
     events
+WHERE
+    mission NOT IN ('UNKN')
 GROUP BY
     mission
     ,device_type

@@ -32,7 +32,8 @@ La NASA desea hacer una simulación para establecer la forma de seguimiento del 
 Para ejecutar el programa, es necesario descargar los archivos `.config` y `Apolo-11.sh` en la ruta de su preferencia. Posteriormente, ejecutar el programa principal `Apolo-11.sh` usando el siguiente comando:
 
 ```bash 
-bash /ruta_preferencia/Apolo-11.sh
+cd /ruta_preferencia
+bash Apolo-11.sh
 ```
 
 Al ejecutarse, el programa tomará las variables alojadas en `.config`, cuyo contenido es el siguiente:
@@ -45,6 +46,7 @@ min_files=1
 max_files=100
 exec_rate=20
 folder_devices='devices'
+folder_reports='reports'
 folder_backups='backups'
 delimeter='\t'
 date_format='+%d%m%y%H%M%S'
@@ -62,10 +64,11 @@ En caso de que requiera cambiar los parámetros de ejecución de la simulación,
 |    max_files    | Número máximo de dispositivos que serán simulados                                                   | 100                                                         |
 |    exec_rate    | Frecuencia de llegada de datos a sistema central, en segundos                                       | 20                                                          |
 | folder_devices  | Nombre de la carpeta en la que se almacenan los datos de los dispositivos                           | devices                                                     |
+| folder_reports  | Nombre de la carpeta en la que se almacenan los reportes generados                                  | reports                                                     |
 | folder_backups  | Nombre de la carpeta en la que se almacenan los datos de los dispositivos al finalizar los reportes | backups                                                     |
 |    delimeter    | Delimitador de los datos en los archivos de entrada                                                 | \t                                                          |
 |   date_format   | Formato de fecha de los datos en los archivos de entrada                                            | %d%m%y%H%M%S                                                |
-| max_simulations | Número máximo de simulaciones a llevar a cabo                                                       | 720                                                         |                                                    |
+| max_simulations | Número máximo de simulaciones a llevar a cabo                                                       | 720                                                         |
 
 El programa entonces simulará la llegada de entre `min_files` y `max_files` archivos (número escogido aleatoriamente), con una frecuencia de `exec_rate` segundos. Cada archivo corresponde a un dispositivo en `devices` en alguna de las misiones en `missions` que está reportando su estado actual de acuerdo con `statuses`. Los archivos que llegan se almacenan inicialmente en la carpeta `folder_devices/datetime`, donde `datetime` es la marca de fecha y hora correspondiente a la llegada de los archivos al sistema, en formato `date_format`. Posteriormente, se generan los reportes que se describen a continuación, y toda la información es trasferida a la carpeta `folder_backups/datetime`. El nombre con el que se guarda cada archivo individual es `APL[ORBONE|CLNM|TMRS|GALXONE|UNKN]-0000[1-100].log`
 
@@ -73,7 +76,7 @@ Para evitar que el programa quede ejecutándose infinitamente (al capitán se le
 
 ## Reportes generados
 
-Los reportes generados tienen la siguiente estructura de nombramiento: `APLSTATS-[REPORTE]-[datetime].log`. Son guardados en la misma carpeta de los archivos de misión.
+Los reportes generados tienen la siguiente estructura de nombramiento: `APLSTATS-[REPORTE]-[datetime].log`. Son guardados en la carpeta `folder_reports/datetime`.
 
 
 | Reporte        | Descripción                                                                                                                             |
@@ -83,3 +86,7 @@ Los reportes generados tienen la siguiente estructura de nombramiento: `APLSTATS
 | DISCONNECTIONS | Contiene por cada misión, el tipo de dispositivo con más eventos de desconexión, y el número de eventos de desconexión correspondientes |
 | FAILURES       | Contiene por cada misión, el número de eventos de dispositivos en estado inoperable (killed)                                            |
 | PERCENTS       | Contiene el porcentaje de eventos que se recibieron por cada misión y tipo de dispositivo, respecto al total de eventos de la ejecución |
+
+
+> [!WARNING]
+> Asegúrese de que el archivo `tmp_sim_step.log` no exista en la ruta de preferencia donde se guardó el script principal, pues este es un archivo temporal que solo debe existir en tiempo de ejecución de la simulación, pero puede quedar creado si la simulación falla o es interrumpida. 
